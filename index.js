@@ -1,3 +1,4 @@
+console.log('🟢 Petición recibida:', req.body);
 import express from "express";
 import puppeteer from "puppeteer";
 
@@ -6,6 +7,8 @@ app.use(express.json());
 
 app.post("/presupuesto", async (req, res) => {
   const { dni } = req.body;
+  console.log('📥 DNI recibido:', dni);
+
   if (!dni) return res.status(400).send("Falta DNI");
 
   const browser = await puppeteer.launch({
