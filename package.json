@@ -1,7 +1,6 @@
 {
-  "name": "genernet-budget-bot",
+  "name": "genernet-budget-bot-final",
   "version": "1.0.0",
-  "description": "Bot para presupuestos en Genernet",
   "type": "module",
   "main": "index.js",
   "scripts": {

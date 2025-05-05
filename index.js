@@ -5,36 +5,34 @@ const app = express();
 app.use(express.json());
 
 app.post("/presupuesto", async (req, res) => {
-  const { dni, capital } = req.body;
+  const { dni } = req.body;
+  if (!dni) return res.status(400).send("Falta DNI");
 
-  if (!dni || !capital) return res.status(400).send("DNI y capital son obligatorios");
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox"]
+  });
 
-  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
   try {
-    await page.goto("https://generali.es/arq_genernetPortalFormWeb/CRMPortal.po?mediatorCode=43855#");
+    await page.goto("https://access.generali.es", { waitUntil: "networkidle2" });
 
-    // Simulación de pasos
-    await page.waitForSelector("#dni");
-    await page.type("#dni", dni);
+    // Aquí iría el flujo real que simula el acceso y pasos de Genernet
+    // Por ahora devolvemos un número simulado para testeo
+    await new Promise(r => setTimeout(r, 2000)); // Simula espera de navegación
 
-    // Suponiendo que el capital se selecciona con un selector
-    await page.select("#capitalSelect", capital.toString());
-
-    // Ir a pestaña recibos, seleccionar pago anual, extraer importe
-    await page.waitForSelector("#totalImporte"); // ejemplo
-    const importe = await page.$eval("#totalImporte", el => el.innerText);
-
+    const importe = "56.78"; // Ejemplo
     await browser.close();
-    res.json({ importeAnual: importe });
+    res.json({ dni, importe });
 
   } catch (err) {
     await browser.close();
-    res.status(500).send("Error en la simulación: " + err.message);
+    res.status(500).json({ error: "Error al automatizar", detalle: err.message });
   }
 });
 
-app.listen(10000, () => {
-  console.log("Servidor escuchando en el puerto 10000");
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log("Servidor escuchando en el puerto", PORT);
 });
