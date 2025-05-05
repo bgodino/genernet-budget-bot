@@ -1,42 +1,40 @@
-const express = require('express');
-const puppeteer = require('puppeteer');
+import express from "express";
+import puppeteer from "puppeteer";
 
 const app = express();
 app.use(express.json());
 
-app.post('/presupuesto', async (req, res) => {
-  const { dni } = req.body;
-  if (!dni) return res.status(400).json({ error: 'Falta DNI' });
+app.post("/presupuesto", async (req, res) => {
+  const { dni, capital } = req.body;
 
-  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+  if (!dni || !capital) return res.status(400).send("DNI y capital son obligatorios");
+
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
   try {
-    await page.goto('https://access.generali.es', { waitUntil: 'networkidle2' });
+    await page.goto("https://generali.es/arq_genernetPortalFormWeb/CRMPortal.po?mediatorCode=43855#");
 
-    // Aquí iría el login (rellenar usuario y contraseña)
-    // await page.type('#usuario', 'TU_USUARIO');
-    // await page.type('#clave', 'TU_CLAVE');
-    // await page.click('#botonEntrar');
-    // await page.waitForNavigation();
+    // Simulación de pasos
+    await page.waitForSelector("#dni");
+    await page.type("#dni", dni);
 
-    // Simulación de pasos reales basada en tus pantallazos (por implementar):
-    // Navegación por menús > Proyecto de seguro > Decesos > Familiar/Residentes
-    // Introducir DNI, seleccionar modalidad, seleccionar capital adicional 1000€
-    // Ir a pestaña Recibos, seleccionar pago Anual, leer importe
+    // Suponiendo que el capital se selecciona con un selector
+    await page.select("#capitalSelect", capital.toString());
 
-    const importeAnual = 42.80; // Simulado, reemplazar con scraping real
+    // Ir a pestaña recibos, seleccionar pago anual, extraer importe
+    await page.waitForSelector("#totalImporte"); // ejemplo
+    const importe = await page.$eval("#totalImporte", el => el.innerText);
 
     await browser.close();
-    res.json({ dni, importeAnual });
+    res.json({ importeAnual: importe });
 
-  } catch (error) {
+  } catch (err) {
     await browser.close();
-    res.status(500).json({ error: 'Error en automatización', details: error.message });
+    res.status(500).send("Error en la simulación: " + err.message);
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
+app.listen(10000, () => {
+  console.log("Servidor escuchando en el puerto 10000");
 });
